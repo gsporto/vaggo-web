@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import * as Yup from 'yup';
 import {
   FiTerminal,
@@ -22,14 +22,60 @@ import { useToast } from '../../hooks/toast';
 import api from '../../services/api';
 import getValidationErrors from '../../utils/getValidationErrors';
 
+type Techs =
+  | 'C#'
+  | 'Javascript'
+  | 'Nodejs'
+  | 'Angular'
+  | 'React'
+  | 'Ionic'
+  | 'Mensageria'
+  | 'PHP'
+  | 'Laravel';
+
+interface ICandidateDTO {
+  id: string;
+  name: string;
+  email: string;
+  age: number;
+  linkedin: string;
+  techs: Techs[];
+}
+
 interface IModalProps {
+  id?: string;
   isOpen: boolean;
   setIsOpen: () => void;
 }
 
-const ModalCreateCandidate: React.FC<IModalProps> = ({ isOpen, setIsOpen }) => {
+const ModalEditCandidate: React.FC<IModalProps> = ({
+  id,
+  isOpen,
+  setIsOpen,
+}) => {
   const formRef = useRef<FormHandles>(null);
   const { addToast } = useToast();
+
+  useEffect(() => {
+    async function loadCandidate(): Promise<void> {
+      const candidate = await api.get<ICandidateDTO>(`/candidate/${id}`);
+      const { name, email, age, linkedin, techs } = candidate.data;
+      if (formRef.current) {
+        formRef.current.setData({
+          name,
+          email,
+          age,
+          linkedin,
+        });
+        const techsParded = techs.map((techMap) => ({
+          label: techMap,
+          value: techMap,
+        }));
+        formRef.current.setFieldValue('techs', techsParded);
+      }
+    }
+    if (id) loadCandidate();
+  }, [id]);
 
   const handleSubmit = useCallback(
     async (data: any) => {
@@ -57,12 +103,12 @@ const ModalCreateCandidate: React.FC<IModalProps> = ({ isOpen, setIsOpen }) => {
 
         await schema.validate(data, { abortEarly: false });
 
-        await api.post('/candidate', data);
+        await api.put(`/candidate/${id}`, data);
 
         setIsOpen();
         addToast({
           type: 'success',
-          title: 'Cadastrado com sucesso!',
+          title: 'Atualizado com sucesso!',
         });
       } catch (err) {
         if (err instanceof Yup.ValidationError) {
@@ -78,7 +124,7 @@ const ModalCreateCandidate: React.FC<IModalProps> = ({ isOpen, setIsOpen }) => {
         });
       }
     },
-    [addToast, setIsOpen],
+    [addToast, id, setIsOpen],
   );
 
   const options = [
@@ -95,7 +141,7 @@ const ModalCreateCandidate: React.FC<IModalProps> = ({ isOpen, setIsOpen }) => {
   return (
     <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
       <Container>
-        <h1>Cadastrar</h1>
+        <h1>Atualizar</h1>
         <Form
           ref={formRef}
           onSubmit={handleSubmit}
@@ -130,4 +176,4 @@ const ModalCreateCandidate: React.FC<IModalProps> = ({ isOpen, setIsOpen }) => {
   );
 };
 
-export default ModalCreateCandidate;
+export default ModalEditCandidate;
