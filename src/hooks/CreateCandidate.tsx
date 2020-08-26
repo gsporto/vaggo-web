@@ -5,6 +5,7 @@ import ModalCreateCandidate from '../components/ModalCreateCandidate';
 interface CreateCandidateContextData {
   openCreateCandidate(): void;
   closeCreateCandidate(): void;
+  isOpenCreateCandidate: boolean;
 }
 
 const CreateCandidateContext = createContext<CreateCandidateContextData>(
@@ -28,7 +29,11 @@ export const CreateCandidateProvider: React.FC = ({ children }) => {
 
   return (
     <CreateCandidateContext.Provider
-      value={{ openCreateCandidate, closeCreateCandidate }}
+      value={{
+        openCreateCandidate,
+        closeCreateCandidate,
+        isOpenCreateCandidate: modalOpen,
+      }}
     >
       {children}
       <ModalCreateCandidate isOpen={modalOpen} setIsOpen={toggleModal} />
