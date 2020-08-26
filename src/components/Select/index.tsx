@@ -19,11 +19,11 @@ const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
   const inputRef = useRef<ReactSelect>(null);
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
+  const [isValue, setIsValue] = useState();
   const { fieldName, defaultValue, error, registerField } = useField(name);
 
   const handleInputBlur = useCallback(() => {
     setIsFocused(false);
-
     if (rest.isMulti) {
       setIsFilled(!!inputRef.current?.state.value);
     }
@@ -49,6 +49,9 @@ const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
         }
         return ref.state.value.value;
       },
+      setValue: (_, valueSet) => {
+        setIsValue(valueSet);
+      },
     });
   }, [fieldName, registerField, rest.isMulti]);
 
@@ -56,6 +59,10 @@ const Input: React.FC<InputProps> = ({ name, icon: Icon, ...rest }) => {
     <Container isError={!!error} isFilled={isFilled} isFocused={isFocused}>
       {Icon && <Icon size={20} />}
       <ReactSelect
+        value={isValue}
+        onChange={(e) => {
+          setIsValue(e);
+        }}
         onFocus={handleInputFocus}
         onBlur={handleInputBlur}
         defaultValue={defaultValue}
