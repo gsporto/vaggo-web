@@ -17,6 +17,7 @@ import { useCreateCandidate } from '../../hooks/CreateCandidate';
 
 import { Container, CandidateItens, Header } from './styles';
 import api from '../../services/api';
+import { useEditCandidate } from '../../hooks/EditCandidate';
 
 type Techs =
   | 'C#'
@@ -45,6 +46,7 @@ interface iOption {
 
 const Dashboard: React.FC = () => {
   const { openCreateCandidate, isOpenCreateCandidate } = useCreateCandidate();
+  const { openEditCandidate, isOpenEditCandidate } = useEditCandidate();
 
   const [searchSelected, setSearchSelected] = useState<Techs[]>([]);
   const [candidatesList, setCandidatesList] = useState<ICandidateDTO[]>([]);
@@ -56,11 +58,18 @@ const Dashboard: React.FC = () => {
       setCandidatesList([...data]);
     }
     loadCandidates();
-  }, [isOpenCreateCandidate]);
+  }, [isOpenCreateCandidate, isOpenEditCandidate]);
 
   const openModal = useCallback(() => {
     openCreateCandidate();
   }, [openCreateCandidate]);
+
+  const openModalEdit = useCallback(
+    (id: string) => {
+      openEditCandidate(id);
+    },
+    [openEditCandidate],
+  );
 
   const handleSelect = useCallback(
     (e) => {
@@ -82,7 +91,7 @@ const Dashboard: React.FC = () => {
 
   const handleDelete = useCallback(
     async (id) => {
-      await api.delete(`/candidates/${id}`);
+      await api.delete(`/candidate/${id}`);
       const newList = candidatesList.filter((item) => item.id !== id);
       setCandidatesList(newList);
     },
@@ -159,7 +168,12 @@ const Dashboard: React.FC = () => {
                 </div>
                 <p>Deletar</p>
               </Button>
-              <Button type="button">
+              <Button
+                type="button"
+                onClick={() => {
+                  openModalEdit(candidateFiltered.id);
+                }}
+              >
                 <div>
                   <FiEdit3 />
                 </div>

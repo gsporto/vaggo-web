@@ -57,7 +57,7 @@ export const Header = styled.header`
 
 export const CandidateItens = styled.article`
   background: #fff;
-  border: 1px solid #e6e6f0;
+  border: 1px solid #1d55ab;
   border-radius: 0.8rem;
   margin-top: 2.4rem;
   overflow: hidden;
@@ -68,7 +68,7 @@ export const CandidateItens = styled.article`
     flex-direction: column;
     align-items: center;
     background: #fafafc;
-    border-bottom: 1px solid #e6e6f0;
+    border-bottom: 1px solid #1d55ab;
 
     strong {
       font-size: 42px;
@@ -104,7 +104,7 @@ export const CandidateItens = styled.article`
   footer {
     padding: 1rem 2rem;
     background: #fafafc;
-    border-top: 1px solid #e6e6f0;
+    border-top: 1px solid #1d55ab;
     display: flex;
     align-items: center;
     justify-content: space-between;
