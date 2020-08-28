@@ -12,11 +12,12 @@ import {
 
 import Button from '../../components/Button';
 import Select from '../../components/Select';
+import api from '../../services/api';
 
 import { useCreateCandidate } from '../../hooks/CreateCandidate';
+import { useToast } from '../../hooks/toast';
 
 import { Container, CandidateItens, Header } from './styles';
-import api from '../../services/api';
 import { useEditCandidate } from '../../hooks/EditCandidate';
 
 type Techs =
@@ -47,18 +48,29 @@ interface iOption {
 const Dashboard: React.FC = () => {
   const { openCreateCandidate, isOpenCreateCandidate } = useCreateCandidate();
   const { openEditCandidate, isOpenEditCandidate } = useEditCandidate();
+  const { addToast } = useToast();
 
   const [searchSelected, setSearchSelected] = useState<Techs[]>([]);
   const [candidatesList, setCandidatesList] = useState<ICandidateDTO[]>([]);
 
   useEffect(() => {
     async function loadCandidates(): Promise<void> {
-      const candidates = await api.get<ICandidateDTO[]>('/candidates');
-      const { data } = candidates;
-      setCandidatesList([...data]);
+      try {
+        const candidates = await api.get<ICandidateDTO[]>('/candidates');
+        const { data } = candidates;
+        setCandidatesList([...data]);
+      } catch (error) {
+        if (error.message === 'expired-token') {
+          addToast({
+            type: 'error',
+            title: 'Token invalido ou expirado',
+            description: 'Acesse sua conta novamente.',
+          });
+        }
+      }
     }
-    loadCandidates();
-  }, [isOpenCreateCandidate, isOpenEditCandidate]);
+    if (!isOpenCreateCandidate && !isOpenEditCandidate) loadCandidates();
+  }, [addToast, isOpenCreateCandidate, isOpenEditCandidate]);
 
   const openModal = useCallback(() => {
     openCreateCandidate();

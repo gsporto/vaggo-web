@@ -1,4 +1,6 @@
 import React, { createContext, useCallback, useState, useContext } from 'react';
+import axios from 'axios';
+import { decode } from 'jsonwebtoken';
 import api from '../services/api';
 
 interface User {
@@ -35,7 +37,6 @@ export const AuthProvider: React.FC = ({ children }) => {
 
     return {} as AuthState;
   });
-
   const signIn = useCallback(async ({ email, password }) => {
     const response = await api.post('authenticate', {
       email,
@@ -58,6 +59,28 @@ export const AuthProvider: React.FC = ({ children }) => {
 
     setData({} as AuthState);
   }, []);
+
+  api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('@Vaggo:token');
+    const user = localStorage.getItem('@Vaggo:user');
+    if (token && user) {
+      const decodeToken = decode(token) as { exp: number };
+
+      if (!decodeToken) {
+        signOut();
+        throw new axios.Cancel('expired-token');
+      }
+
+      const tokenDate = new Date(decodeToken.exp * 1000);
+      const isExpired = tokenDate <= new Date();
+      if (isExpired) {
+        signOut();
+        throw new axios.Cancel('expired-token');
+      }
+    }
+
+    return config;
+  });
 
   return (
     <AuthContext.Provider value={{ user: data.user, signIn, signOut }}>
